@@ -80,7 +80,8 @@
                 // plane.receiveShadow = true;
 
                 var spotLight = new THREE.SpotLight(0xffffff);
-                spotLight.position.set(-10, 20, 0);
+                // 灯光要放远一点，否则假雪花球的投影太大
+                spotLight.position.set(-30, 20, 0);
                 spotLight.shadow.mapSize.width = 256;
                 spotLight.shadow.mapSize.height = 256;
                 spotLight.shadow.camera.fov = 15;
@@ -138,6 +139,7 @@
                 const sprite4 = textureLoader_snow.load( '/examples/textures/sprites/snowflake4.png' );
                 const sprite5 = textureLoader_snow.load( '/examples/textures/sprites/snowflake5.png' );
 
+                const group = new THREE.Group();
                 for ( let i = 0; i < 800; i ++ ) {
 
                     const x = Math.random() * EARTH_RADIUS * 2 - EARTH_RADIUS;
@@ -149,8 +151,23 @@
                     }
 
                     vertices.push( x, y, z );
+                    // for fake snowflakes to cast shadow
+                    var sphereGeometry = new THREE.SphereGeometry(Math.random()*0.4, 20, 20);
+                    var sphereMaterial = new THREE.MeshLambertMaterial({
+                        opacity: 0.5, 
+                        transparent: true,
+                        color: 0x7777ff
+                    });
+                    var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+                    sphere.position.x = x;
+                    sphere.position.y = y;
+                    sphere.position.z = z;
+                    sphere.castShadow = true;
+                    group.add(sphere)
 
                 }
+
+                scene.add( group );
 
                 geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
 
@@ -270,11 +287,14 @@
 
                 if ( object instanceof THREE.Points ) {
 
-                    object.rotation.y = time * ( i < 4 ? i + 1 : - ( i + 1 ) );
+                    object.rotation.y = time * ( i < 4 ? i + 1 : - ( i  + 1 ) );
 
                 }
 
+                if ( object instanceof THREE.Group ) {
+                object.rotation.y = time * ( i < 4 ? i   + 1 : - ( i  + 1 ) );
                 }
+            }
                 // 以上雪花片旋转
 
 
